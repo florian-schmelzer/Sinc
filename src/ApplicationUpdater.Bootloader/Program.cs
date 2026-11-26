@@ -76,11 +76,11 @@ if (!latestVersion.IsNewerThan(installedVersion))
 }
 
 Console.WriteLine("Update verfügbar. Download wird gestartet.");
+string temporaryPath;
 try
 {
     var installationDirectory = Path.GetDirectoryName(applicationPath)!;
-    var temporaryPath = await updateClient.DownloadAsync(latestVersion.Version, installationDirectory);
-    Console.WriteLine($"Download abgeschlossen: {temporaryPath}");
+    temporaryPath = await updateClient.DownloadAsync(latestVersion.Version, installationDirectory);
 }
 catch (Exception exception) when (exception is HttpRequestException or IOException or UnauthorizedAccessException or OperationCanceledException)
 {
@@ -88,4 +88,17 @@ catch (Exception exception) when (exception is HttpRequestException or IOExcepti
     return 1;
 }
 
+Console.WriteLine("Download abgeschlossen. Update wird installiert.");
+try
+{
+    File.Move(temporaryPath, applicationPath, overwrite: true);
+}
+catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+{
+    Console.Error.WriteLine($"Installation fehlgeschlagen: {exception.Message}");
+    Console.Error.WriteLine($"Der vollständige Download liegt unter: {temporaryPath}");
+    return 1;
+}
+
+Console.WriteLine($"Update installiert: {latestVersion.Version}");
 return 0;
