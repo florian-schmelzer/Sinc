@@ -77,7 +77,8 @@ static async Task<int> UpdateApplicationAsync(string? serviceUrl, string applica
         return 1;
     }
 
-    using var httpClient = new HttpClient { BaseAddress = serviceAddress };
+    using var httpClient = new HttpClient();
+    httpClient.BaseAddress = serviceAddress;
     var updateClient = new UpdateClient(httpClient);
     UpdateVersion? latestVersion;
     try
