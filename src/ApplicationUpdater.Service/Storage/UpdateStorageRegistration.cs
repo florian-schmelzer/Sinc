@@ -20,6 +20,10 @@ public static class UpdateStorageRegistration
 
                 var absoluteRootPath = Path.GetFullPath(rootPath, contentRootPath);
                 services.AddSingleton<IUpdateStorage>(new FilesystemUpdateStorage(absoluteRootPath));
+
+                // Alternativ:
+                // services.AddSingleton(new FilesystemStorageOptions(absoluteRootPath));
+                // services.AddSingleton<IUpdateStorage, FilesystemUpdateStorage>();
                 return;
             }
             case "Database":
