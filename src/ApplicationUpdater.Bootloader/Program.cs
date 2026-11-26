@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Text.Json;
 using ApplicationUpdater.Bootloader;
@@ -42,63 +43,90 @@ var installedVersion = new Version(
 
 Console.WriteLine($"Installierte Version: {installedVersion}");
 
-if (!Uri.TryCreate(configuration["UpdateService:BaseUrl"], UriKind.Absolute, out var serviceAddress) ||
-    serviceAddress.Scheme is not ("http" or "https"))
+var updateExitCode = await UpdateApplicationAsync(configuration["UpdateService:BaseUrl"], applicationPath, installedVersion);
+if (updateExitCode != 0)
 {
-    Console.Error.WriteLine("In 'UpdateService:BaseUrl' muss eine HTTP- oder HTTPS-Adresse stehen.");
-    return 1;
+    Console.WriteLine("Die vorhandene Installation wird gestartet.");
 }
 
-using var httpClient = new HttpClient { BaseAddress = serviceAddress };
-var updateClient = new UpdateClient(httpClient);
-UpdateVersion? latestVersion;
 try
 {
-    latestVersion = await updateClient.GetLatestVersionAsync();
+    using var application = Process.Start(new ProcessStartInfo
+    {
+        FileName = applicationPath,
+        WorkingDirectory = Path.GetDirectoryName(applicationPath)!,
+        UseShellExecute = true
+    });
+    Console.WriteLine("SampleApplication gestartet.");
 }
-catch (Exception exception) when (exception is HttpRequestException or JsonException or TaskCanceledException)
+catch (Win32Exception exception)
 {
-    Console.Error.WriteLine($"Versionsabfrage fehlgeschlagen: {exception.Message}");
+    Console.Error.WriteLine($"SampleApplication konnte nicht gestartet werden: {exception.Message}");
     return 1;
 }
 
-if (latestVersion is null)
+return updateExitCode;
+
+static async Task<int> UpdateApplicationAsync(string? serviceUrl, string applicationPath, Version installedVersion)
 {
-    Console.WriteLine("Der UpdateService stellt derzeit keine Version bereit.");
+    if (!Uri.TryCreate(serviceUrl, UriKind.Absolute, out var serviceAddress) ||
+        serviceAddress.Scheme is not ("http" or "https"))
+    {
+        Console.Error.WriteLine("In 'UpdateService:BaseUrl' muss eine HTTP- oder HTTPS-Adresse stehen.");
+        return 1;
+    }
+
+    using var httpClient = new HttpClient { BaseAddress = serviceAddress };
+    var updateClient = new UpdateClient(httpClient);
+    UpdateVersion? latestVersion;
+    try
+    {
+        latestVersion = await updateClient.GetLatestVersionAsync();
+    }
+    catch (Exception exception) when (exception is HttpRequestException or JsonException or TaskCanceledException)
+    {
+        Console.Error.WriteLine($"Versionsabfrage fehlgeschlagen: {exception.Message}");
+        return 1;
+    }
+
+    if (latestVersion is null)
+    {
+        Console.WriteLine("Der UpdateService stellt derzeit keine Version bereit.");
+        return 0;
+    }
+
+    Console.WriteLine($"Serverversion: {latestVersion.Version}");
+    if (!latestVersion.IsNewerThan(installedVersion))
+    {
+        Console.WriteLine("Kein Update erforderlich.");
+        return 0;
+    }
+
+    Console.WriteLine("Update verfügbar. Download wird gestartet.");
+    string temporaryPath;
+    try
+    {
+        var installationDirectory = Path.GetDirectoryName(applicationPath)!;
+        temporaryPath = await updateClient.DownloadAsync(latestVersion.Version, installationDirectory);
+    }
+    catch (Exception exception) when (exception is HttpRequestException or IOException or UnauthorizedAccessException or OperationCanceledException)
+    {
+        Console.Error.WriteLine($"Download fehlgeschlagen: {exception.Message}");
+        return 1;
+    }
+
+    Console.WriteLine("Download abgeschlossen. Update wird installiert.");
+    try
+    {
+        File.Move(temporaryPath, applicationPath, overwrite: true);
+    }
+    catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+    {
+        Console.Error.WriteLine($"Installation fehlgeschlagen: {exception.Message}");
+        Console.Error.WriteLine($"Der vollständige Download liegt unter: {temporaryPath}");
+        return 1;
+    }
+
+    Console.WriteLine($"Update installiert: {latestVersion.Version}");
     return 0;
 }
-
-Console.WriteLine($"Serverversion: {latestVersion.Version}");
-if (!latestVersion.IsNewerThan(installedVersion))
-{
-    Console.WriteLine("Kein Update erforderlich.");
-    return 0;
-}
-
-Console.WriteLine("Update verfügbar. Download wird gestartet.");
-string temporaryPath;
-try
-{
-    var installationDirectory = Path.GetDirectoryName(applicationPath)!;
-    temporaryPath = await updateClient.DownloadAsync(latestVersion.Version, installationDirectory);
-}
-catch (Exception exception) when (exception is HttpRequestException or IOException or UnauthorizedAccessException or OperationCanceledException)
-{
-    Console.Error.WriteLine($"Download fehlgeschlagen: {exception.Message}");
-    return 1;
-}
-
-Console.WriteLine("Download abgeschlossen. Update wird installiert.");
-try
-{
-    File.Move(temporaryPath, applicationPath, overwrite: true);
-}
-catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
-{
-    Console.Error.WriteLine($"Installation fehlgeschlagen: {exception.Message}");
-    Console.Error.WriteLine($"Der vollständige Download liegt unter: {temporaryPath}");
-    return 1;
-}
-
-Console.WriteLine($"Update installiert: {latestVersion.Version}");
-return 0;
