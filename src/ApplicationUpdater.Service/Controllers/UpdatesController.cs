@@ -1,36 +1,37 @@
-using ApplicationUpdater.Service.Contracts;
+using ApplicationUpdater.Service.Updates;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ApplicationUpdater.Service.Controllers;
 
 [ApiController]
 [Route("api/updates")]
-public sealed class UpdatesController(IUpdateService updateService) : ControllerBase
+public sealed class UpdatesController(ISender sender) : ControllerBase
 {
     [HttpGet("/")]
     public ContentResult GetStatus() => Content("UpdateService ist erreichbar.", "text/plain");
 
     [HttpGet("latest")]
-    public ActionResult<UpdateVersion> GetLatest()
+    public async Task<ActionResult<UpdateVersion>> GetLatest(CancellationToken cancellationToken)
     {
-        var latestVersion = updateService.GetLatestVersion();
+        var latestVersion = await sender.Send(new GetLatestUpdateQuery(), cancellationToken);
         return latestVersion is null ? NotFound() : Ok(latestVersion);
     }
 
     [HttpGet("{version}/download")]
-    public IActionResult Download([FromRoute] string? version)
+    public async Task<IActionResult> Download([FromRoute] string? version, CancellationToken cancellationToken)
     {
-        if (!Version.TryParse(version, out var requestedVersion) || requestedVersion.Revision < 0)
+        var result = await sender.Send(new DownloadUpdateQuery(version), cancellationToken);
+        if (result.ValidationError is not null)
         {
-            return new JsonResult("Die Version muss aus vier Zahlen bestehen, zum Beispiel 2.0.577.98.")
+            return new JsonResult(result.ValidationError)
             {
                 StatusCode = StatusCodes.Status400BadRequest
             };
         }
 
-        var stream = updateService.OpenDownload(requestedVersion);
-        return stream is null
+        return result.Content is null
             ? NotFound()
-            : File(stream, "application/octet-stream", SampleApplication.FileName);
+            : File(result.Content, "application/octet-stream", SampleApplication.FileName);
     }
 }

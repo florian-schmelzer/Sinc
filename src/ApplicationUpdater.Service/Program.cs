@@ -1,6 +1,7 @@
 using ApplicationUpdater.Service;
 using ApplicationUpdater.Service.Contracts;
 using ApplicationUpdater.Service.Storage;
+using ApplicationUpdater.Service.Updates;
 
 var builder = WebApplication.CreateBuilder(args);
 try
@@ -14,6 +15,7 @@ catch (InvalidOperationException exception)
 }
 
 builder.Services.AddSingleton<IUpdateService, UpdateService>();
+builder.Services.AddMediatR(options => options.RegisterServicesFromAssemblyContaining<GetLatestUpdateQuery>());
 builder.Services.AddControllers()
     .ConfigureApiBehaviorOptions(options => options.SuppressMapClientErrors = true);
 var app = builder.Build();
