@@ -14,29 +14,11 @@ catch (InvalidOperationException exception)
 }
 
 builder.Services.AddSingleton<IUpdateService, UpdateService>();
+builder.Services.AddControllers()
+    .ConfigureApiBehaviorOptions(options => options.SuppressMapClientErrors = true);
 var app = builder.Build();
 
-app.MapGet("/", () => "UpdateService ist erreichbar.");
-
-app.MapGet("/api/updates/latest", (IUpdateService updateService) =>
-{
-    var latestVersion = updateService.GetLatestVersion();
-    return latestVersion is null ? Results.NotFound() : Results.Ok(latestVersion);
-});
-
-app.MapGet("/api/updates/{version}/download", (string version, IUpdateService updateService) =>
-{
-    if (!Version.TryParse(version, out var requestedVersion) || requestedVersion.Revision < 0)
-    {
-        return Results.BadRequest("Die Version muss aus vier Zahlen bestehen, zum Beispiel 2.0.577.98.");
-    }
-
-    var stream = updateService.OpenDownload(requestedVersion);
-    return stream is null
-        ? Results.NotFound()
-        : Results.File(stream, "application/octet-stream", SampleApplication.FileName);
-});
-
+app.MapControllers();
 app.Run();
 return 0;
 

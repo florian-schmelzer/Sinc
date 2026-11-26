@@ -15,6 +15,18 @@ public sealed class UpdateEndpointsTests : IDisposable
     private readonly DirectoryInfo _root = Directory.CreateTempSubdirectory("application-updater-tests-");
 
     [Fact]
+    public async Task GetRoot_ReturnsPlainTextStatus()
+    {
+        using var factory = CreateFactory();
+        using var client = factory.CreateClient();
+        using var response = await client.GetAsync("/");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal("text/plain", response.Content.Headers.ContentType?.MediaType);
+        Assert.Equal("UpdateService ist erreichbar.", await response.Content.ReadAsStringAsync());
+    }
+
+    [Fact]
     public async Task GetLatest_ReturnsVersionAndFilename()
     {
         foreach (var version in new[] { "2.0.577.100", "2.0.577.99" })
@@ -41,6 +53,7 @@ public sealed class UpdateEndpointsTests : IDisposable
         using var response = await client.GetAsync("/api/updates/latest");
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        Assert.Empty(await response.Content.ReadAsStringAsync());
     }
 
     [Fact]
@@ -73,6 +86,7 @@ public sealed class UpdateEndpointsTests : IDisposable
         using var response = await client.GetAsync("/api/updates/1.2.352.32/download");
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        Assert.Empty(await response.Content.ReadAsStringAsync());
     }
 
     [Theory]
@@ -86,6 +100,9 @@ public sealed class UpdateEndpointsTests : IDisposable
         using var response = await client.GetAsync($"/api/updates/{version}/download");
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Equal("application/json", response.Content.Headers.ContentType?.MediaType);
+        var message = JsonSerializer.Deserialize<string>(await response.Content.ReadAsStringAsync());
+        Assert.Equal("Die Version muss aus vier Zahlen bestehen, zum Beispiel 2.0.577.98.", message);
     }
 
     public void Dispose()
