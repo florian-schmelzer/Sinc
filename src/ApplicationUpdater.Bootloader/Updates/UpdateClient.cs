@@ -1,10 +1,11 @@
+using System.IO.Abstractions;
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 
 namespace ApplicationUpdater.Bootloader.Updates;
 
-public sealed class UpdateClient(HttpClient httpClient)
+public sealed class UpdateClient(HttpClient httpClient, IFileSystem fileSystem)
 {
     public async Task<UpdateVersion?> GetLatestVersionAsync(CancellationToken cancellationToken = default)
     {
@@ -31,7 +32,7 @@ public sealed class UpdateClient(HttpClient httpClient)
         response.EnsureSuccessStatusCode();
 
         var temporaryPath = Path.Combine(destinationDirectory, $"{Guid.NewGuid():N}.tmp");
-        var file = new FileStream(temporaryPath, FileMode.CreateNew, FileAccess.Write, FileShare.None);
+        var file = fileSystem.FileStream.New(temporaryPath, FileMode.CreateNew, FileAccess.Write, FileShare.None);
         try
         {
             await using (file)
@@ -47,7 +48,7 @@ public sealed class UpdateClient(HttpClient httpClient)
         }
         catch
         {
-            File.Delete(temporaryPath);
+            fileSystem.File.Delete(temporaryPath);
             throw;
         }
     }

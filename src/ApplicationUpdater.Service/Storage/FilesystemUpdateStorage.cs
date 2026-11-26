@@ -1,19 +1,20 @@
+using System.IO.Abstractions;
 using ApplicationUpdater.Service.Contracts;
 
 namespace ApplicationUpdater.Service.Storage;
 
-public sealed class FilesystemUpdateStorage(string rootPath) : IUpdateStorage
+public sealed class FilesystemUpdateStorage(string rootPath, IFileSystem fileSystem) : IUpdateStorage
 {
     public Version? GetLatestVersion()
     {
         Version? latestVersion = null;
 
-        foreach (var directory in new DirectoryInfo(rootPath).EnumerateDirectories())
+        foreach (var directory in fileSystem.DirectoryInfo.New(rootPath).EnumerateDirectories())
         {
             if (!Version.TryParse(directory.Name, out var version) ||
                 version.Revision < 0 ||
                 directory.Name != version.ToString() ||
-                !File.Exists(Path.Combine(directory.FullName, SampleApplication.FileName)))
+                !fileSystem.File.Exists(Path.Combine(directory.FullName, SampleApplication.FileName)))
             {
                 continue;
             }
@@ -38,17 +39,17 @@ public sealed class FilesystemUpdateStorage(string rootPath) : IUpdateStorage
         var executablePath = Path.Combine(rootPath, version.ToString(), SampleApplication.FileName);
         try
         {
-            return File.OpenRead(executablePath);
+            return fileSystem.File.OpenRead(executablePath);
         }
         catch (FileNotFoundException)
         {
             return null;
         }
-        catch (DirectoryNotFoundException) when (Directory.Exists(rootPath))
+        catch (DirectoryNotFoundException) when (fileSystem.Directory.Exists(rootPath))
         {
             return null;
         }
-        catch (UnauthorizedAccessException) when (Directory.Exists(executablePath))
+        catch (UnauthorizedAccessException) when (fileSystem.Directory.Exists(executablePath))
         {
             return null;
         }

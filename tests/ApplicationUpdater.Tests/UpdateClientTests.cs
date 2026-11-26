@@ -1,3 +1,4 @@
+using System.IO.Abstractions.TestingHelpers;
 using System.Net;
 using System.Net.Http.Json;
 using ApplicationUpdater.Bootloader.Updates;
@@ -22,7 +23,7 @@ public sealed class UpdateClientTests
             Content = JsonContent.Create(new { version = serverVersion, fileName = "SampleApplication.exe" })
         };
         using var httpClient = CreateHttpClient(response);
-        var client = new UpdateClient(httpClient);
+        var client = new UpdateClient(httpClient, new MockFileSystem());
 
         var latestVersion = await client.GetLatestVersionAsync();
 
@@ -37,7 +38,7 @@ public sealed class UpdateClientTests
     {
         using var response = new HttpResponseMessage(HttpStatusCode.NotFound);
         using var httpClient = CreateHttpClient(response);
-        var client = new UpdateClient(httpClient);
+        var client = new UpdateClient(httpClient, new MockFileSystem());
 
         Assert.Null(await client.GetLatestVersionAsync());
     }
@@ -47,7 +48,7 @@ public sealed class UpdateClientTests
     {
         using var response = new HttpResponseMessage(HttpStatusCode.InternalServerError);
         using var httpClient = CreateHttpClient(response);
-        var client = new UpdateClient(httpClient);
+        var client = new UpdateClient(httpClient, new MockFileSystem());
 
         await Assert.ThrowsAsync<HttpRequestException>(() => client.GetLatestVersionAsync());
     }

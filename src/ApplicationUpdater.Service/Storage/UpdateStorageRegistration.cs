@@ -1,4 +1,6 @@
+using System.IO.Abstractions;
 using ApplicationUpdater.Service.Contracts;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace ApplicationUpdater.Service.Storage;
 
@@ -19,7 +21,9 @@ public static class UpdateStorageRegistration
                 }
 
                 var absoluteRootPath = Path.GetFullPath(rootPath, contentRootPath);
-                services.AddSingleton<IUpdateStorage>(new FilesystemUpdateStorage(absoluteRootPath));
+                services.TryAddSingleton<IFileSystem, FileSystem>();
+                services.AddSingleton<IUpdateStorage>(provider =>
+                    new FilesystemUpdateStorage(absoluteRootPath, provider.GetRequiredService<IFileSystem>()));
 
                 // Alternativ:
                 // services.AddSingleton(new FilesystemStorageOptions(absoluteRootPath));
