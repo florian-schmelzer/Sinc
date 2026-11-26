@@ -16,6 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="../../src/ApplicationUpdater.Bootloader/ApplicationUpdater.Bootloader.csproj" />
     <ProjectReference Include="../../src/ApplicationUpdater.Service/ApplicationUpdater.Service.csproj" />
   </ItemGroup>
 
