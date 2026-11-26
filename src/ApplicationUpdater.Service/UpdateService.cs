@@ -1,4 +1,4 @@
-using ApplicationUpdater.Service.Storage;
+using ApplicationUpdater.Service.Contracts;
 
 namespace ApplicationUpdater.Service;
 

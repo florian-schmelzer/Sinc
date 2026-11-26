@@ -1,4 +1,4 @@
-namespace ApplicationUpdater.Service;
+namespace ApplicationUpdater.Service.Contracts;
 
 public interface IUpdateService
 {

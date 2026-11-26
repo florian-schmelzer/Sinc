@@ -1,3 +1,5 @@
+using ApplicationUpdater.Service.Contracts;
+
 namespace ApplicationUpdater.Service.Storage;
 
 public sealed class FilesystemUpdateStorage(string rootPath) : IUpdateStorage

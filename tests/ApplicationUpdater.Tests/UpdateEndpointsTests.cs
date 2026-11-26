@@ -1,5 +1,6 @@
 using System.Net;
 using System.Text.Json;
+using ApplicationUpdater.Service.Contracts;
 using ApplicationUpdater.Service.Storage;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;

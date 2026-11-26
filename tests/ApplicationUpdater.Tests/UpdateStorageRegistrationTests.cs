@@ -1,3 +1,4 @@
+using ApplicationUpdater.Service.Contracts;
 using ApplicationUpdater.Service.Storage;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
