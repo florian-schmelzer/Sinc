@@ -1,3 +1,5 @@
 <Solution>
-  <Project Path="Sinc/Sinc.csproj" />
+  <Project Path="src/ApplicationUpdater.Bootloader/ApplicationUpdater.Bootloader.csproj" />
+  <Project Path="src/ApplicationUpdater.Service/ApplicationUpdater.Service.csproj" />
+  <Project Path="tests/ApplicationUpdater.Tests/ApplicationUpdater.Tests.csproj" />
 </Solution>
