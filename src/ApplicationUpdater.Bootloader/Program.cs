@@ -11,6 +11,7 @@ var configuration = new ConfigurationBuilder()
     .Build();
 
 var configuredPath = configuration["ApplicationPath"];
+
 if (string.IsNullOrWhiteSpace(configuredPath))
 {
     Console.Error.WriteLine("Der Pfad in 'ApplicationPath' fehlt.");
