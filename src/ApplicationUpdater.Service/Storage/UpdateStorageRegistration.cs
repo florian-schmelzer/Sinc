@@ -8,19 +8,27 @@ public static class UpdateStorageRegistration
     {
         var storage = configuration.GetSection("UpdateStorage");
         var provider = storage["Provider"];
-        if (provider != "FileSystem")
+        switch (provider)
         {
-            throw new InvalidOperationException(
-                $"Unbekannter Storage-Anbieter '{provider ?? "(fehlt)"}' in 'UpdateStorage:Provider'. Unterstützt wird 'FileSystem'.");
-        }
+            case "FileSystem":
+            {
+                var rootPath = storage["RootPath"];
+                if (string.IsNullOrWhiteSpace(rootPath))
+                {
+                    throw new InvalidOperationException("Der Pfad in 'UpdateStorage:RootPath' fehlt.");
+                }
 
-        var rootPath = storage["RootPath"];
-        if (string.IsNullOrWhiteSpace(rootPath))
-        {
-            throw new InvalidOperationException("Der Pfad in 'UpdateStorage:RootPath' fehlt.");
-        }
+                var absoluteRootPath = Path.GetFullPath(rootPath, contentRootPath);
+                services.AddSingleton<IUpdateStorage>(new FilesystemUpdateStorage(absoluteRootPath));
+                return;
+            }
+            case "Database":
+                throw new InvalidOperationException(
+                    "Der Storage-Anbieter 'Database' ist noch nicht implementiert. Unterstützt wird 'FileSystem'.");
 
-        var absoluteRootPath = Path.GetFullPath(rootPath, contentRootPath);
-        services.AddSingleton<IUpdateStorage>(new FilesystemUpdateStorage(absoluteRootPath));
+            default:
+                throw new InvalidOperationException(
+                    $"Unbekannter Storage-Anbieter '{provider ?? "(fehlt)"}' in 'UpdateStorage:Provider'. Unterstützt wird 'FileSystem'.");
+        }
     }
 }

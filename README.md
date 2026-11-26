@@ -72,7 +72,7 @@ Der Bootloader meldet `Kein Update erforderlich.` und startet die SampleApplicat
 - **UpdateService** implementiert `IUpdateService` und delegiert die Dateizugriffe an `IUpdateStorage`. Der Dienst liest `Urls`, `UpdateStorage:Provider` und `UpdateStorage:RootPath` aus `src/ApplicationUpdater.Service/appsettings.json`. Relative Speicherpfade beziehen sich beim gezeigten Start auf das Verzeichnis des Serviceprojekts. Der unterstützte Anbieter heißt `FileSystem`.
 - **Dateisystemspeicher** findet die verfügbaren Versionen in den direkten Unterordnern des konfigurierten Speicherverzeichnisses. Lege für eine neue Serverversion einen Ordner mit der vollständigen vierteiligen Dateiversion an und speichere die passende Datei darin als `SampleApplication.exe`.
 
-Für einen späteren Datenbankspeicher kann eine weitere Implementierung von `IUpdateStorage` in `UpdateStorageRegistration` registriert werden.
+Für einen späteren Datenbankspeicher ist der Konfigurationswert `Database` reserviert. Bis eine Datenbankimplementierung von `IUpdateStorage` in `UpdateStorageRegistration` registriert ist, beendet der Dienst bei dieser Auswahl den Start mit einer Fehlermeldung.
 
 Einen anderen lokalen EXE-Pfad kannst du für einen einzelnen Start übergeben.
 

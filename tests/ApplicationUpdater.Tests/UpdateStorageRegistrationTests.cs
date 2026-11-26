@@ -32,7 +32,7 @@ public sealed class UpdateStorageRegistrationTests
     }
 
     [Theory]
-    [InlineData("Database", "Database")]
+    [InlineData("Cloud", "Cloud")]
     [InlineData(null, "(fehlt)")]
     public void AddUpdateStorage_RejectsUnsupportedProvider(string? provider, string expectedName)
     {
@@ -44,6 +44,18 @@ public sealed class UpdateStorageRegistrationTests
 
         Assert.Contains("UpdateStorage:Provider", exception.Message);
         Assert.Contains(expectedName, exception.Message);
+    }
+
+    [Fact]
+    public void AddUpdateStorage_ReportsDatabaseProviderAsNotImplemented()
+    {
+        var configuration = CreateConfiguration("Database", null);
+        var services = new ServiceCollection();
+
+        var exception = Assert.Throws<InvalidOperationException>(
+            () => services.AddUpdateStorage(configuration, AppContext.BaseDirectory));
+
+        Assert.Contains("'Database' ist noch nicht implementiert", exception.Message);
     }
 
     [Fact]
