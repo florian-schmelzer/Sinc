@@ -1,3 +1,5 @@
+using ApplicationUpdater.Service.Updates;
+
 namespace ApplicationUpdater.Service.Contracts;
 
 public interface IUpdateService

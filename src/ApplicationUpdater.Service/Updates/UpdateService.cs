@@ -1,6 +1,6 @@
 using ApplicationUpdater.Service.Contracts;
 
-namespace ApplicationUpdater.Service;
+namespace ApplicationUpdater.Service.Updates;
 
 public sealed class UpdateService(IUpdateStorage storage) : IUpdateService
 {

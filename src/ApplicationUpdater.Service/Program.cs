@@ -1,6 +1,6 @@
-using ApplicationUpdater.Service;
 using ApplicationUpdater.Service.Contracts;
 using ApplicationUpdater.Service.Storage;
+using ApplicationUpdater.Service.Updates;
 using ApplicationUpdater.Service.Updates.Queries;
 
 var builder = WebApplication.CreateBuilder(args);
