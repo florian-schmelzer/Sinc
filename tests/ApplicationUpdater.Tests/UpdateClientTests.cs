@@ -64,6 +64,7 @@ public sealed class UpdateClientTests
         {
             Assert.Equal(HttpMethod.Get, request.Method);
             Assert.Equal("http://localhost:5080/api/updates/latest", request.RequestUri?.AbsoluteUri);
+
             return Task.FromResult(response);
         }
     }

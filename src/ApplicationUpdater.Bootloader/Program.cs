@@ -16,6 +16,7 @@ var configuredPath = configuration["ApplicationPath"];
 if (string.IsNullOrWhiteSpace(configuredPath))
 {
     Console.Error.WriteLine("Der Pfad in 'ApplicationPath' fehlt.");
+
     return 1;
 }
 
@@ -30,12 +31,14 @@ try
 catch (FileNotFoundException)
 {
     Console.Error.WriteLine($"Die SampleApplication wurde nicht gefunden: {applicationPath}");
+
     return 1;
 }
 
 if (installedVersion is null)
 {
     Console.Error.WriteLine($"Die Datei enthält keine lesbare Versionsinformation: {applicationPath}");
+
     return 1;
 }
 
@@ -60,6 +63,7 @@ try
 catch (Win32Exception exception)
 {
     Console.Error.WriteLine($"SampleApplication konnte nicht gestartet werden: {exception.Message}");
+
     return 1;
 }
 
@@ -71,6 +75,7 @@ async Task<int> UpdateApplicationAsync(string? serviceUrl, string applicationPat
         serviceAddress.Scheme is not ("http" or "https"))
     {
         Console.Error.WriteLine("In 'UpdateService:BaseUrl' muss eine HTTP- oder HTTPS-Adresse stehen.");
+
         return 1;
     }
 
@@ -85,12 +90,14 @@ async Task<int> UpdateApplicationAsync(string? serviceUrl, string applicationPat
     catch (Exception exception) when (exception is HttpRequestException or JsonException or TaskCanceledException)
     {
         Console.Error.WriteLine($"Versionsabfrage fehlgeschlagen: {exception.Message}");
+
         return 1;
     }
 
     if (latestVersion is null)
     {
         Console.WriteLine("Der UpdateService stellt derzeit keine Version bereit.");
+
         return 0;
     }
 
@@ -98,6 +105,7 @@ async Task<int> UpdateApplicationAsync(string? serviceUrl, string applicationPat
     if (!latestVersion.IsNewerThan(installedVersion))
     {
         Console.WriteLine("Kein Update erforderlich.");
+
         return 0;
     }
 
@@ -111,6 +119,7 @@ async Task<int> UpdateApplicationAsync(string? serviceUrl, string applicationPat
     catch (Exception exception) when (exception is HttpRequestException or IOException or UnauthorizedAccessException or OperationCanceledException)
     {
         Console.Error.WriteLine($"Download fehlgeschlagen: {exception.Message}");
+
         return 1;
     }
 
@@ -123,9 +132,11 @@ async Task<int> UpdateApplicationAsync(string? serviceUrl, string applicationPat
     {
         Console.Error.WriteLine($"Installation fehlgeschlagen: {exception.Message}");
         Console.Error.WriteLine($"Der vollständige Download liegt unter: {temporaryPath}");
+
         return 1;
     }
 
     Console.WriteLine($"Update installiert: {latestVersion.Version}");
+
     return 0;
 }

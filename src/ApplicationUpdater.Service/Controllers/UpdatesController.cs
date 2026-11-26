@@ -16,6 +16,7 @@ public sealed class UpdatesController(ISender sender) : ControllerBase
     public async Task<ActionResult<UpdateVersion>> GetLatest(CancellationToken cancellationToken)
     {
         var latestVersion = await sender.Send(new GetLatestUpdateQuery(), cancellationToken);
+
         return latestVersion is null ? NotFound() : Ok(latestVersion);
     }
 

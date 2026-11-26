@@ -10,6 +10,7 @@ internal sealed class GetLatestUpdateHandler(IUpdateService updateService)
     public Task<UpdateVersion?> Handle(GetLatestUpdateQuery request, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
+
         return Task.FromResult(updateService.GetLatestVersion());
     }
 }

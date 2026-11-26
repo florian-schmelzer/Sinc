@@ -7,6 +7,7 @@ public sealed class UpdateService(IUpdateStorage storage) : IUpdateService
     public UpdateVersion? GetLatestVersion()
     {
         var version = storage.GetLatestVersion();
+
         return version is null ? null : new UpdateVersion(version, SampleApplication.FileName);
     }
 
