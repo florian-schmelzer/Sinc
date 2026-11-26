@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.Diagnostics;
+using System.IO.Abstractions;
 using System.Text.Json;
 using ApplicationUpdater.Bootloader.Updates;
 using Microsoft.Extensions.Configuration;
@@ -18,11 +19,13 @@ if (string.IsNullOrWhiteSpace(configuredPath))
     return 1;
 }
 
+var fileSystem = new FileSystem();
+var installation = new InstalledApplication(fileSystem);
 var applicationPath = Path.GetFullPath(configuredPath, AppContext.BaseDirectory);
-FileVersionInfo versionInfo;
+Version? installedVersion;
 try
 {
-    versionInfo = FileVersionInfo.GetVersionInfo(applicationPath);
+    installedVersion = installation.ReadVersion(applicationPath);
 }
 catch (FileNotFoundException)
 {
@@ -30,17 +33,11 @@ catch (FileNotFoundException)
     return 1;
 }
 
-if (string.IsNullOrWhiteSpace(versionInfo.FileVersion))
+if (installedVersion is null)
 {
     Console.Error.WriteLine($"Die Datei enthält keine lesbare Versionsinformation: {applicationPath}");
     return 1;
 }
-
-var installedVersion = new Version(
-    versionInfo.FileMajorPart,
-    versionInfo.FileMinorPart,
-    versionInfo.FileBuildPart,
-    versionInfo.FilePrivatePart);
 
 Console.WriteLine($"Installierte Version: {installedVersion}");
 
@@ -68,7 +65,7 @@ catch (Win32Exception exception)
 
 return updateExitCode;
 
-static async Task<int> UpdateApplicationAsync(string? serviceUrl, string applicationPath, Version installedVersion)
+async Task<int> UpdateApplicationAsync(string? serviceUrl, string applicationPath, Version installedVersion)
 {
     if (!Uri.TryCreate(serviceUrl, UriKind.Absolute, out var serviceAddress) ||
         serviceAddress.Scheme is not ("http" or "https"))
@@ -79,7 +76,7 @@ static async Task<int> UpdateApplicationAsync(string? serviceUrl, string applica
 
     using var httpClient = new HttpClient();
     httpClient.BaseAddress = serviceAddress;
-    var updateClient = new UpdateClient(httpClient);
+    var updateClient = new UpdateClient(httpClient, fileSystem);
     UpdateVersion? latestVersion;
     try
     {
@@ -120,7 +117,7 @@ static async Task<int> UpdateApplicationAsync(string? serviceUrl, string applica
     Console.WriteLine("Download abgeschlossen. Update wird installiert.");
     try
     {
-        File.Move(temporaryPath, applicationPath, overwrite: true);
+        installation.ReplaceExecutable(applicationPath, temporaryPath);
     }
     catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
     {

@@ -1,3 +1,5 @@
+using System.IO.Abstractions;
+using System.IO.Abstractions.TestingHelpers;
 using ApplicationUpdater.Service.Contracts;
 using ApplicationUpdater.Service.Storage;
 using Microsoft.Extensions.Configuration;
@@ -29,6 +31,24 @@ public sealed class UpdateStorageRegistrationTests
         {
             contentRoot.Delete(recursive: true);
         }
+    }
+
+    [Fact]
+    public void AddUpdateStorage_UsesRegisteredFileSystem()
+    {
+        var contentRoot = Path.Combine(AppContext.BaseDirectory, "service-content");
+        var fileSystem = new MockFileSystem();
+        fileSystem.AddFile(Path.Combine(contentRoot, "updates", "1.2.352.32", "SampleApplication.exe"),
+            new MockFileData("sample"));
+        var configuration = CreateConfiguration("FileSystem", "updates");
+        var services = new ServiceCollection();
+        services.AddSingleton<IFileSystem>(fileSystem);
+
+        services.AddUpdateStorage(configuration, contentRoot);
+        using var serviceProvider = services.BuildServiceProvider();
+        var storage = serviceProvider.GetRequiredService<IUpdateStorage>();
+
+        Assert.Equal(new Version(1, 2, 352, 32), storage.GetLatestVersion());
     }
 
     [Theory]
