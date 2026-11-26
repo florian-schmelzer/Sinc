@@ -1,4 +1,4 @@
-using ApplicationUpdater.Service.Updates;
+using ApplicationUpdater.Service.Updates.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 

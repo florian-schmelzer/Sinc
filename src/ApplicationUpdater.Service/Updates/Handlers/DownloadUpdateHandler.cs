@@ -1,11 +1,8 @@
 using ApplicationUpdater.Service.Contracts;
+using ApplicationUpdater.Service.Updates.Queries;
 using MediatR;
 
-namespace ApplicationUpdater.Service.Updates;
-
-internal sealed record DownloadUpdateQuery(string? Version) : IRequest<DownloadUpdateResult>;
-
-internal sealed record DownloadUpdateResult(Stream? Content, string? ValidationError = null);
+namespace ApplicationUpdater.Service.Updates.Handlers;
 
 internal sealed class DownloadUpdateHandler(IUpdateService updateService)
     : IRequestHandler<DownloadUpdateQuery, DownloadUpdateResult>
