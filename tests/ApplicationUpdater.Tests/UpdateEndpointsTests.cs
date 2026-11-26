@@ -1,3 +1,4 @@
+using System.IO.Abstractions;
 using System.Net;
 using System.Text.Json;
 using ApplicationUpdater.Service.Contracts;
@@ -122,7 +123,8 @@ public sealed class UpdateEndpointsTests : IDisposable
             builder.ConfigureTestServices(services =>
             {
                 services.RemoveAll<IUpdateStorage>();
-                services.AddSingleton<IUpdateStorage>(new FilesystemUpdateStorage(_root.FullName));
+                services.AddSingleton<IUpdateStorage>(provider =>
+                    new FilesystemUpdateStorage(_root.FullName, provider.GetRequiredService<IFileSystem>()));
             }));
     }
 }
