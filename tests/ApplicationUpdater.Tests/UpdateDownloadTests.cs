@@ -78,6 +78,7 @@ public sealed class UpdateDownloadTests
         {
             Assert.Equal(HttpMethod.Get, request.Method);
             Assert.Equal($"/api/updates/{RequestedVersion}/download", request.RequestUri?.AbsolutePath);
+
             return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = content });
         }
     }
@@ -93,6 +94,7 @@ public sealed class UpdateDownloadTests
         protected override bool TryComputeLength(out long length)
         {
             length = 10;
+
             return true;
         }
     }

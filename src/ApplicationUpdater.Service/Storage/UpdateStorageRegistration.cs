@@ -28,6 +28,7 @@ public static class UpdateStorageRegistration
                 // Alternativ:
                 // services.AddSingleton(new FilesystemStorageOptions(absoluteRootPath));
                 // services.AddSingleton<IUpdateStorage, FilesystemUpdateStorage>();
+
                 return;
             }
             case "Database":

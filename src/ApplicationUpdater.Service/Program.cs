@@ -10,6 +10,7 @@ try
 catch (InvalidOperationException exception)
 {
     Console.Error.WriteLine(exception.Message);
+
     return 1;
 }
 
@@ -21,6 +22,7 @@ var app = builder.Build();
 
 app.MapControllers();
 app.Run();
+
 return 0;
 
 public partial class Program { }
