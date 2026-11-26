@@ -23,6 +23,19 @@ app.MapGet("/api/updates/latest", (IUpdateService updateService) =>
     return latestVersion is null ? Results.NotFound() : Results.Ok(latestVersion);
 });
 
+app.MapGet("/api/updates/{version}/download", (string version, IUpdateService updateService) =>
+{
+    if (!Version.TryParse(version, out var requestedVersion) || requestedVersion.Revision < 0)
+    {
+        return Results.BadRequest("Die Version muss aus vier Zahlen bestehen, zum Beispiel 2.0.577.98.");
+    }
+
+    var stream = updateService.OpenDownload(requestedVersion);
+    return stream is null
+        ? Results.NotFound()
+        : Results.File(stream, "application/octet-stream", SampleApplication.FileName);
+});
+
 app.Run();
 return 0;
 
