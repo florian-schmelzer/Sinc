@@ -1,4 +1,4 @@
-namespace ApplicationUpdater.Bootloader;
+namespace ApplicationUpdater.Bootloader.Updates;
 
 public sealed record UpdateVersion(Version Version, string FileName)
 {

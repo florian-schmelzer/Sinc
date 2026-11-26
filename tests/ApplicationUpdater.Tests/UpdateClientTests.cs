@@ -1,6 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
-using ApplicationUpdater.Bootloader;
+using ApplicationUpdater.Bootloader.Updates;
 using Xunit;
 
 namespace ApplicationUpdater.Tests;

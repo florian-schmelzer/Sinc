@@ -1,7 +1,7 @@
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Text.Json;
-using ApplicationUpdater.Bootloader;
+using ApplicationUpdater.Bootloader.Updates;
 using Microsoft.Extensions.Configuration;
 
 var configuration = new ConfigurationBuilder()

@@ -2,7 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 
-namespace ApplicationUpdater.Bootloader;
+namespace ApplicationUpdater.Bootloader.Updates;
 
 public sealed class UpdateClient(HttpClient httpClient)
 {

@@ -1,5 +1,5 @@
 using System.Net;
-using ApplicationUpdater.Bootloader;
+using ApplicationUpdater.Bootloader.Updates;
 using Xunit;
 
 namespace ApplicationUpdater.Tests;
