@@ -69,5 +69,23 @@ if (latestVersion is null)
 }
 
 Console.WriteLine($"Serverversion: {latestVersion.Version}");
-Console.WriteLine(latestVersion.IsNewerThan(installedVersion) ? "Update verfügbar." : "Kein Update erforderlich.");
+if (!latestVersion.IsNewerThan(installedVersion))
+{
+    Console.WriteLine("Kein Update erforderlich.");
+    return 0;
+}
+
+Console.WriteLine("Update verfügbar. Download wird gestartet.");
+try
+{
+    var installationDirectory = Path.GetDirectoryName(applicationPath)!;
+    var temporaryPath = await updateClient.DownloadAsync(latestVersion.Version, installationDirectory);
+    Console.WriteLine($"Download abgeschlossen: {temporaryPath}");
+}
+catch (Exception exception) when (exception is HttpRequestException or IOException or UnauthorizedAccessException or OperationCanceledException)
+{
+    Console.Error.WriteLine($"Download fehlgeschlagen: {exception.Message}");
+    return 1;
+}
+
 return 0;

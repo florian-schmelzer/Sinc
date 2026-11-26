@@ -23,4 +23,32 @@ public sealed class UpdateClient(HttpClient httpClient)
 
         return latestVersion;
     }
+
+    public async Task<string> DownloadAsync(Version version, string destinationDirectory, CancellationToken cancellationToken = default)
+    {
+        using var response = await httpClient.GetAsync(
+            $"api/updates/{version}/download", HttpCompletionOption.ResponseHeadersRead, cancellationToken);
+        response.EnsureSuccessStatusCode();
+
+        var temporaryPath = Path.Combine(destinationDirectory, $"{Guid.NewGuid():N}.tmp");
+        var file = new FileStream(temporaryPath, FileMode.CreateNew, FileAccess.Write, FileShare.None);
+        try
+        {
+            await using (file)
+            {
+                await response.Content.CopyToAsync(file, cancellationToken);
+                if (response.Content.Headers.ContentLength is long expectedLength && file.Length != expectedLength)
+                {
+                    throw new IOException($"Unvollständiger Download: {file.Length} von {expectedLength} Byte.");
+                }
+            }
+
+            return temporaryPath;
+        }
+        catch
+        {
+            File.Delete(temporaryPath);
+            throw;
+        }
+    }
 }
